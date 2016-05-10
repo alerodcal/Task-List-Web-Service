@@ -32,10 +32,14 @@ public class tasklistService {
             service.getLists(token);
             // Create a new task in the task list
             service.newTask("Come hoy", "10/06/78", "newtasklist", token);
+            // Print all tasks in the task list
+            service.getTasks("newtasklist", token);
+            // Delete task from that task list
+            service.deleteTask(1, "newtasklist", token);
             // Delete task list for that user
             //service.deleteTaskList("newtasklist", token);
             // Delete user
-            //service.deleteUser(token);
+            service.deleteUser(token);
             service.close();
             while(true);
         } catch (Exception e) {
@@ -295,8 +299,8 @@ public class tasklistService {
         if (task != null && duedate != null && taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
-                String query = "INSERT INTO taskList." +  taskList  
-                                + "VALUES (default,?,?,default);";
+                String query = "INSERT INTO taskList." + session.getUsername() + "_" + taskList  
+                                + " VALUES (default,?,?,default);";
                 // Update task in database.
                 preparedStatement = connect
                           .prepareStatement(query);
@@ -315,7 +319,76 @@ public class tasklistService {
         }
     }
 
+    // This method delete a task to the task list of the user.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
+    public void deleteTask (int id, String taskList, String token) throws Exception {
+        if (id > 0 && taskList != null && token != null){
+            Session session = isSessionOpened(token);
+            if (session != null){
 
+                // Remove table from user taskLists table
+                query = "DELETE FROM " + session.getUsername() + "_" + taskList
+                         + "WHERE id=?;"; 
+                preparedStatement = connect
+                      .prepareStatement(query);
+                preparedStatement.setId(1,id);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+                System.out.println("Task with id " + id + " has been deleted from " 
+                        + session.getUsername() +  "_" + taskList + ".");
+            } else {
+                throw new Exception("Session is not opened.");
+            }
+        } else {
+            throw new Exception("You must provide a valid id, task list and session token.");
+        }
+    }
+
+    // This method return an array of strings with the names of the user task lists.
+    // Return null if the user has not task lists.
+    // Throws Exception if you pass a null argument.
+    public Task[] getTasks (String taskList, String token) throws Exception{
+        ArrayList<Task> tasks = null;
+        String done = "Not done";
+        if (token != null){
+            Session session = isSessionOpened(token);
+            // Get user lists from the database.
+            preparedStatement = connect
+                  .prepareStatement("SELECT * FROM " + session.getUsername() +
+                          "_" + taskList);
+            resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                tasks = new ArrayList<Task>();
+                // The specified task list has not any task inside.
+                resultSet.beforeFirst();
+                // ResultSet is initially before the first data set
+                // We go row by row adding the task to the tasks list that will be returned
+                System.out.println("Tasks from " + session.getUsername() + "_" + taskList + ":");
+                while (resultSet.next()){
+                    tasks.add(new Task(resultSet.getId("id"), resultSet.getString("task"),
+                                       resultSet.getString("duedate"), resultSet.getBoolean("done")););
+                    if (task.getDone())
+                        done = "Done";
+                    System.out.println("\t" + task.getId() + ") " + task.getString + "(" +
+                                        task.getDueDate() + "): " + done);
+                }
+            }
+        } else {
+            throw new Exception("You must provide a valid task list and session token.");
+        }
+        
+        if (tasks != null) {
+            Task result[] = new Task[tasks.size()];
+            for (int i = 0; i < tasks.size(); i++) {
+                result[i] = tasks.get(i);
+            }
+            return result;
+        }
+
+        else 
+            return null;
+    }
     
     // This method check if the session with the given token is opened.
     // Return the session object if the session is opened or null in other case.

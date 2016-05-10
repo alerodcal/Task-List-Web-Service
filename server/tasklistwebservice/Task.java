@@ -6,12 +6,14 @@ public class Task {
 	private String duedate = null;
 	private Boolean done = false;
 	
-	public Task (String task, String duedate){
+	public Task (int id, String task, String duedate, Boolean done){
+		this.id = id;
 		this.task = task;
 		this.duedate = duedate;
+		this.done = done;
 	}
 	
-	public String getId (){
+	public int getId (){
 		return id;
 	}
 	
@@ -27,7 +29,9 @@ public class Task {
 		return done;
 	}
 
-	// There isn't a setId method because you can't set the id 
+	public void setId (int id){
+		this.id = id;
+	}
 	
 	public void setTask (String task){
 		this.task = task;
