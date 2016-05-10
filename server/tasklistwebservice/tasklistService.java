@@ -26,6 +26,7 @@ public class tasklistService {
             //service.registerUser("user2", "pass1");
             String token = service.loginUser("user2", "pass2");
             service.newTaskList("newtasklist", token);
+            System.out.println(service.getLists(token).toString());
             service.deleteTaskList("newtasklist", token);
             service.close();
             while(true);
@@ -45,7 +46,7 @@ public class tasklistService {
               // Setup the connection with the DB
               System.out.println("Connecting to a selected database...");
               connect = DriverManager
-                  .getConnection("jdbc:mysql://localhost/taskList?"
+                  .getConnection("jdbc:mysql://172.20.10.4/taskList?"
                       + "user=taskList&password=taskList");
               System.out.println("Connected database successfully...");
         } catch (Exception e) {
@@ -208,22 +209,27 @@ public class tasklistService {
         }
     }
     
-    //This method return an array of strings with the names of the user task lists.
-    //Return null if the user has not task lists.
-    //Throws Exception if you pass a null argument.
+    // This method return an array of strings with the names of the user task lists.
+    // Return null if the user has not task lists.
+    // Throws Exception if you pass a null argument.
     public String[] getLists (String token) throws Exception{
         ArrayList<String> lists = null;
         if (token != null){
             Session session = isSessionOpened(token);
-            //Get user lists from the database.
+            // Get user lists from the database.
             preparedStatement = connect
                   .prepareStatement("SELECT * FROM taskList." + session.getUsername() +
                           "_taskLists");
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next() != false){
-                //The specified user has not any task list.
+                // The specified user has not any task list.
                 resultSet.beforeFirst();
-                //TODO recorrer el resultado de la consulta añadiendo al array list las listas.
+                // ResultSet is initially before the first data set
+                // We go row by row adding the task list name to the list that will be returned
+                while (resultSet.next()){
+                	lists.add(resultSet.getString("listname"));
+                	System.out.println(resultSet.getString("listname"));
+                }
             }
         } else {
             throw new Exception("You must provide a valid session token.");
@@ -235,8 +241,8 @@ public class tasklistService {
             return null;
     }
     
-    //This method check if the session with the given token is opened.
-    //Return the session object if the session is opened or null in other case.
+    // This method check if the session with the given token is opened.
+    // Return the session object if the session is opened or null in other case.
     private Session isSessionOpened(String token) {
         Session result = null;
         for (Session j: sessions)
@@ -245,7 +251,7 @@ public class tasklistService {
         return result;
     }
     
-    //This method close the session with the given session token.
+    // This method close the session with the given session token.
     public void closeSession(String token){
         for (Session j: sessions)
             if (j.getSessionToken().equals(token))
