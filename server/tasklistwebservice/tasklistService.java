@@ -54,9 +54,9 @@ public class tasklistService {
         } 
     }
 
-    //This function adds a new user to the database.
-    //Throws Exception if user is already in use or if you pass a null argument.
-    //Return the session token if the user has been created correctly.
+    // This function adds a new user to the database.
+    // Throws Exception if user is already in use or if you pass a null argument.
+    // Return the session token if the user has been created correctly.
     public String registerUser(String username, String password) throws Exception {
         String sessionToken = null;
         if (username != null && password != null) {
@@ -102,7 +102,7 @@ public class tasklistService {
         
         if (username != null && password != null) { 
                 preparedStatement = connect
-                      .prepareStatement("select * from taskList.users where username=?");
+                      .prepareStatement("SELECT * FROM taskList.users WHERE username=?");
                 preparedStatement.setString(1, username);
                 resultSet = preparedStatement.executeQuery();
                 if(resultSet.next() == false){
@@ -217,7 +217,7 @@ public class tasklistService {
             Session session = isSessionOpened(token);
             //Get user lists from the database.
             preparedStatement = connect
-                  .prepareStatement("select * from taskList." + session.getUsername() +
+                  .prepareStatement("SELECT * FROM taskList." + session.getUsername() +
                           "_taskLists");
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next() != false){
