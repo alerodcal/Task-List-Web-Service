@@ -22,12 +22,18 @@ public class tasklistService {
     public static void main (String [] args){
         tasklistService service = new tasklistService();
         try {
+            // Create new user
             service.registerUser("user2", "pass2");
-            //service.registerUser("user2", "pass1");
+            // Login user
             String token = service.loginUser("user2", "pass2");
+            // Create new task list for that user
             service.newTaskList("newtasklist", token);
+            // Print all lists for that user
             service.getLists(token);
+            // Delete task list for that user
             service.deleteTaskList("newtasklist", token);
+            // Delete user
+            service.deleteUser(token);
             service.close();
             while(true);
         } catch (Exception e) {
@@ -63,7 +69,7 @@ public class tasklistService {
         if (username != null && password != null) {
             try {
                 sessionToken = UUID.randomUUID().toString().replaceAll("-", "");
-                //Add new user to the database.
+                // Add new user to the database.
                 preparedStatement = connect
                       .prepareStatement("INSERT INTO taskList.users VALUES (?,?,?);");
                 preparedStatement.setString(1, username);
@@ -72,7 +78,7 @@ public class tasklistService {
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 
-                //Add table to support new user lists.
+                // Add table to support new user lists.
                 String query = "CREATE TABLE taskList." + username 
                         + "_taskLists (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, listname VARCHAR(30) NOT NULL);";
                 preparedStatement = connect
@@ -93,9 +99,9 @@ public class tasklistService {
         return sessionToken;
     }
 
-    //This function lets the user to login in the system.
-    //Throws Exception if the given user/password is incorrect or if you pass a null argument.
-    //Return the session token if the user has been logged correctly.
+    // This function lets the user to login in the system.
+    // Throws Exception if the given user/password is incorrect or if you pass a null argument.
+    // Return the session token if the user has been logged correctly.
     public String loginUser(String username, String password) throws Exception {
         String sessionToken = null;
         String user = null;
@@ -107,16 +113,16 @@ public class tasklistService {
                 preparedStatement.setString(1, username);
                 resultSet = preparedStatement.executeQuery();
                 if(resultSet.next() == false){
-                    //The specified user doesn't exist.
+                    // The specified user doesn't exist.
                     throw new Exception("The specified username doesn't exist.");
                 } else {
                     user = resultSet.getString("username");
                     pass = resultSet.getString("password");
                     if (pass.equals(password) && user.equals(username)){
-                        //The given password is correct.
-                        //Generate new session token.
+                        // The given password is correct.
+                        // Generate new session token.
                         sessionToken = UUID.randomUUID().toString().replaceAll("-", "");
-                        //Update session token in the database.
+                        // Update session token in the database.
                         preparedStatement = connect
                                   .prepareStatement("UPDATE users SET token=? WHERE username=?");
                         preparedStatement.setString(1, sessionToken);
@@ -127,7 +133,7 @@ public class tasklistService {
                         throw new Exception("The specified password is not correct.");
                     }
                 }
-                //Add session token to opened session list.
+                // Add session token to opened session list.
                 sessions.add(new Session(username,sessionToken));
                 System.out.println( username + " has been logged.");
                 System.out.println("Session token: " + sessionToken);
@@ -142,23 +148,23 @@ public class tasklistService {
         return sessionToken;
     }
     
-    //This method add a new task list to the database of the user.
-    //The session must be opened before call this method.
-    //Throws exception is session is not opened.
+    // This method add a new task list to the database of the user.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
     public void newTaskList (String taskList, String token) throws Exception {
         if (taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
                 String query = "INSERT INTO taskList." + session.getUsername() 
                         + "_taskLists VALUES (default,?);";
-                //Update task Lists in database.
+                // Update task Lists in database.
                 preparedStatement = connect
                           .prepareStatement(query);
                 preparedStatement.setString(1, taskList);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 
-                //Add table to support new list.
+                // Add table to support new list.
                 query = "CREATE TABLE taskList." + session.getUsername()
                         + "_" + taskList + "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                         + "task VARCHAR(256) NOT NULL, duedate VARCHAR(30), done BOOLEAN DEFAULT false);";
@@ -176,22 +182,54 @@ public class tasklistService {
         }
     }
     
-    //This method delete a list to the database of the user.
-    //The session must be opened before call this method.
-    //Throws exception is session is not opened.
+    // This method delete a user from the database.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
+    public void deleteUser (String token) throws Exception {
+        if (token != null){
+            Session session = isSessionOpened(token);
+            if (session != null){
+                String query = "DROP TABLE " + session.getUsername() 
+                        + "_taskLists;";
+                // Delete user's taskLists table in database.
+                preparedStatement = connect
+                          .prepareStatement(query);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+                
+                // Remove user from taskLists table
+                query = 
+                preparedStatement = connect
+                      .prepareStatement("DELETE FROM tasklist.users WHERE username=?;");
+                preparedStatement.setString(1,session.getUsername());
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+                System.out.println("User " + session.getUsername() + " has been deleted.");
+            } else {
+                throw new Exception("Session is not opened.");
+            }
+        } else {
+            throw new Exception("You must provide a valid session token.");
+        }
+    }
+
+
+    // This method delete a list to the database of the user.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
     public void deleteTaskList (String taskList, String token) throws Exception {
         if (taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
                 String query = "DROP TABLE " + session.getUsername() 
                         + "_" + taskList + ";";
-                //Delete task List table in database.
+                // Delete task List table in database.
                 preparedStatement = connect
                           .prepareStatement(query);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 
-                //Remove table from user taskLists table
+                // Remove table from user taskLists table
                 query = "DELETE FROM " + session.getUsername() 
                         + "_taskLists WHERE listname=?;"; 
                 preparedStatement = connect
