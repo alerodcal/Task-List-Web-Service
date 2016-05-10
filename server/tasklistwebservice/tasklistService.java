@@ -37,7 +37,7 @@ public class tasklistService {
             // Delete task from that task list
             service.deleteTask(1, "newtasklist", token);
             // Delete task list for that user
-            //service.deleteTaskList("newtasklist", token);
+            service.deleteTaskList("newtasklist", token);
             // Delete user
             service.deleteUser(token);
             service.close();
@@ -326,13 +326,12 @@ public class tasklistService {
         if (id > 0 && taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
-
                 // Remove table from user taskLists table
-                query = "DELETE FROM " + session.getUsername() + "_" + taskList
-                         + "WHERE id=?;"; 
+                String query = "DELETE FROM " + session.getUsername() + "_" + taskList
+                         + " WHERE id=?;"; 
                 preparedStatement = connect
                       .prepareStatement(query);
-                preparedStatement.setId(1,id);
+                preparedStatement.setInt(1,id);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 System.out.println("Task with id " + id + " has been deleted from " 
@@ -366,11 +365,12 @@ public class tasklistService {
                 // We go row by row adding the task to the tasks list that will be returned
                 System.out.println("Tasks from " + session.getUsername() + "_" + taskList + ":");
                 while (resultSet.next()){
-                    tasks.add(new Task(resultSet.getId("id"), resultSet.getString("task"),
-                                       resultSet.getString("duedate"), resultSet.getBoolean("done")););
+                    Task task = new Task(resultSet.getInt("id"), resultSet.getString("task"),
+                                       resultSet.getString("duedate"), resultSet.getBoolean("done"))
+                    tasks.add(tak);
                     if (task.getDone())
                         done = "Done";
-                    System.out.println("\t" + task.getId() + ") " + task.getString + "(" +
+                    System.out.println("\t" + task.getId() + ") " + task.getTask() + "(" +
                                         task.getDueDate() + "): " + done);
                 }
             }
