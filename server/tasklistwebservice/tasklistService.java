@@ -189,7 +189,7 @@ public class tasklistService {
         if (token != null){
             Session session = isSessionOpened(token);
             if (session != null){
-                String query = "DROP TABLE " + session.getUsername() 
+                String query = "DROP TABLE taskList." + session.getUsername() 
                         + "_taskLists;";
                 // Delete user's taskLists table in database.
                 preparedStatement = connect
@@ -198,9 +198,8 @@ public class tasklistService {
                 preparedStatement.close();
                 
                 // Remove user from taskLists table
-                query = 
                 preparedStatement = connect
-                      .prepareStatement("DELETE FROM tasklist.users WHERE username=?;");
+                      .prepareStatement("DELETE FROM taskList.users WHERE username=?;");
                 preparedStatement.setString(1,session.getUsername());
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
