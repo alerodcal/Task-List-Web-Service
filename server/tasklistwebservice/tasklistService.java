@@ -30,10 +30,12 @@ public class tasklistService {
             service.newTaskList("newtasklist", token);
             // Print all lists for that user
             service.getLists(token);
+            // Create a new task in the task list
+            service.newTask("Come hoy", "10/06/78", "newtasklist", token);
             // Delete task list for that user
-            service.deleteTaskList("newtasklist", token);
+            //service.deleteTaskList("newtasklist", token);
             // Delete user
-            service.deleteUser(token);
+            //service.deleteUser(token);
             service.close();
             while(true);
         } catch (Exception e) {
@@ -285,6 +287,35 @@ public class tasklistService {
         else 
             return null;
     }
+
+    // This method add a new task to the task list of the user.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
+    public void newTask (String task, String duedate, String taskList, String token) throws Exception {
+        if (task != null && duedate != null && taskList != null && token != null){
+            Session session = isSessionOpened(token);
+            if (session != null){
+                String query = "INSERT INTO taskList." +  taskList  
+                                + "VALUES (default,?,?,default);";
+                // Update task in database.
+                preparedStatement = connect
+                          .prepareStatement(query);
+                preparedStatement.setString(1, task);
+                preparedStatement.setString(2, duedate);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+                
+                System.out.println("Task " + task + " has been created for user " 
+                + session.getUsername() + ".");
+            } else {
+                throw new Exception("Session is not opened.");
+            }
+        } else {
+            throw new Exception("You must provide a valid taskList and session token.");
+        }
+    }
+
+
     
     // This method check if the session with the given token is opened.
     // Return the session object if the session is opened or null in other case.
