@@ -26,7 +26,7 @@ public class tasklistService {
             //service.registerUser("user2", "pass1");
             String token = service.loginUser("user2", "pass2");
             service.newTaskList("newtasklist", token);
-            System.out.println(service.getLists(token).toString());
+            service.getLists(token);
             service.deleteTaskList("newtasklist", token);
             service.close();
             while(true);
@@ -46,7 +46,7 @@ public class tasklistService {
               // Setup the connection with the DB
               System.out.println("Connecting to a selected database...");
               connect = DriverManager
-                  .getConnection("jdbc:mysql://172.20.10.4/taskList?"
+                  .getConnection("jdbc:mysql://localhost/taskList?"
                       + "user=taskList&password=taskList");
               System.out.println("Connected database successfully...");
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class tasklistService {
                       .prepareStatement(query);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
-                System.out.println("Task list " + taskList + "has been created for user " 
+                System.out.println("Task list " + taskList + " has been created for user " 
                 + session.getUsername() + ".");
             } else {
                 throw new Exception("Session is not opened.");
@@ -199,7 +199,7 @@ public class tasklistService {
                 preparedStatement.setString(1,taskList);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
-                System.out.println("Task list " + taskList + "has been deleted for user " 
+                System.out.println("Task list " + taskList + " has been deleted for user " 
                         + session.getUsername() + ".");
             } else {
                 throw new Exception("Session is not opened.");
@@ -221,22 +221,30 @@ public class tasklistService {
                   .prepareStatement("SELECT * FROM taskList." + session.getUsername() +
                           "_taskLists");
             resultSet = preparedStatement.executeQuery();
-            if(resultSet.next() != false){
+            if(resultSet.next()){
+                lists = new ArrayList<String>();
                 // The specified user has not any task list.
                 resultSet.beforeFirst();
                 // ResultSet is initially before the first data set
                 // We go row by row adding the task list name to the list that will be returned
+                System.out.println(session.getUsername() + " task lists:");
                 while (resultSet.next()){
                 	lists.add(resultSet.getString("listname"));
-                	System.out.println(resultSet.getString("listname"));
+                	System.out.println("\t-" + resultSet.getString("listname"));
                 }
             }
         } else {
             throw new Exception("You must provide a valid session token.");
         }
         
-        if (lists != null)
-            return (String[]) lists.toArray();
+        if (lists != null) {
+            String result[] = new String[lists.size()];
+            for (int i = 0; i < lists.size(); i++) {
+                result[i] = lists.get(i);
+            }
+            return result;
+        }
+
         else 
             return null;
     }
