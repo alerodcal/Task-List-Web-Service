@@ -195,11 +195,29 @@ public class tasklistService {
         if (token != null){
             Session session = isSessionOpened(token);
             if (session != null){
-                String query = "DROP TABLE taskList." + session.getUsername() 
+
+                String query1 = "SELECT * FROM " + session.getUsername() + "_taskLists";
+                // Get all task lists from the user, to delete them before the user is deleted
+                preparedStatement = connect
+                          .prepareStatement(query1);
+                resultSet = preparedStatement.executeQuery();
+                if(resultSet.next()){
+                    // The specified user has not any task list.
+                    resultSet.beforeFirst();
+                    // ResultSet is initially before the first data set
+                    // We go row by row deleting the task list from the database
+                    System.out.println("Deleting " + session.getUsername() + " task lists:");
+                    while (resultSet.next()){
+                        deleteTaskList(resultSet.getString("listname"), token);
+                        System.out.println("\t-" + resultSet.getString("listname"));
+                    }
+                }
+
+                String query2 = "DROP TABLE taskList." + session.getUsername() 
                         + "_taskLists;";
                 // Delete user's taskLists table in database.
                 preparedStatement = connect
-                          .prepareStatement(query);
+                          .prepareStatement(query2);
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 
