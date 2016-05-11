@@ -317,7 +317,7 @@ public class tasklistService {
         if (task != null && duedate != null && taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
-                String query = "INSERT INTO taskList." + session.getUsername() + "_" + taskList  
+                String query = "INSERT INTO taskList." + session.getUsername() + "_" + taskList.replaceAll("\\s", "_")  
                                 + " VALUES (default,?,?,default);";
                 // Update task in database.
                 preparedStatement = connect
@@ -345,7 +345,7 @@ public class tasklistService {
             Session session = isSessionOpened(token);
             if (session != null){
                 // Remove table from user taskLists table
-                String query = "DELETE FROM " + session.getUsername() + "_" + taskList
+                String query = "DELETE FROM " + session.getUsername() + "_" + taskList.replaceAll("\\s", "_")
                          + " WHERE id=?;"; 
                 preparedStatement = connect
                       .prepareStatement(query);
@@ -370,7 +370,7 @@ public class tasklistService {
             Session session = isSessionOpened(token);
             if (session != null){
                 // Update task row from user taskLists table
-                String query = "UPDATE " + session.getUsername() + "_" + taskList + " SET task=?,dueDate=?,done=?" 
+                String query = "UPDATE " + session.getUsername() + "_" + taskList.replaceAll("\\s", "_") + " SET task=?,dueDate=?,done=?" 
                          + " WHERE id=?;"; 
                 preparedStatement = connect
                       .prepareStatement(query);
@@ -402,7 +402,7 @@ public class tasklistService {
             // Get user lists from the database.
             preparedStatement = connect
                   .prepareStatement("SELECT * FROM " + session.getUsername() +
-                          "_" + taskList);
+                          "_" + taskList.replaceAll("\\s", "_"));
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next()){
                 tasks = new ArrayList<Task>();
