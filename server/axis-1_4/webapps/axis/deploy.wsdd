@@ -1,22 +1,18 @@
 <deployment xmlns="http://xml.apache.org/axis/wsdd/"
                 xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
 
-     <service name="Banco" provider="java:RPC">
+     <service name="tasklistService" provider="java:RPC">
 
       <parameter name="scope" value="application"/>
-      <parameter name="className" value="bancowebservice.Banco"/>
+      <parameter name="className" value="tasklistwebservice.tasklistService"/>
       <parameter name="allowedMethods" value="*"/>
 
-      <beanMapping qname="ns:Titular" xmlns:ns="http://www.uc3m.es/WS/Banco"
-            languageSpecificType="java:bancowebservice.Titular"/>
+      <beanMapping qname="ns:Task" xmlns:ns="http://www.uc3m.es/WS/tasklistService"
+            languageSpecificType="java:tasklistwebservice.Task"/>
 
-      <beanMapping qname="ns:Cuenta" xmlns:ns="http://www.uc3m.es/WS/Banco"
-            languageSpecificType="java:bancowebservice.Cuenta"/>
-      
-      <arrayMapping qname="ns:ArrayOfCuenta" xmlns:ns="http://www.uc3m.es/WS/Banco"
-                 languageSpecificType="java:bancowebservice.Cuenta[]" innerType="ns:Cuenta"
+      <arrayMapping qname="ns:ArrayOfTask" xmlns:ns="http://www.uc3m.es/WS/tasklistService"
+                 languageSpecificType="java:tasklistwebservice.Task[]" innerType="ns:Task"
                  encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
 
      </service>
-
-    </deployment>
+</deployment>

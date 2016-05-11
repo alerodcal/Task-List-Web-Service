@@ -28,17 +28,16 @@
   <parameter name="className" value="org.apache.axis.utils.Admin"/>
   <namespace>http://xml.apache.org/axis/wsdd/</namespace>
  </service>
- <service name="Banco" provider="java:RPC">
-  <parameter name="allowedMethods" value="*"/>
-  <parameter name="className" value="bancowebservice.Banco"/>
-  <parameter name="scope" value="application"/>
-  <beanMapping languageSpecificType="java:bancowebservice.Titular" qname="ns1:Titular" xmlns:ns1="http://www.uc3m.es/WS/Banco"/>
-  <beanMapping languageSpecificType="java:bancowebservice.Cuenta" qname="ns2:Cuenta" xmlns:ns2="http://www.uc3m.es/WS/Banco"/>
-  <arrayMapping innerType="ns3:Cuenta" languageSpecificType="java:bancowebservice.Cuenta[]" qname="ns3:ArrayOfCuenta" xmlns:ns3="http://www.uc3m.es/WS/Banco"/>
- </service>
  <service name="Version" provider="java:RPC">
   <parameter name="allowedMethods" value="getVersion"/>
   <parameter name="className" value="org.apache.axis.Version"/>
+ </service>
+ <service name="tasklistService" provider="java:RPC">
+  <parameter name="allowedMethods" value="*"/>
+  <parameter name="className" value="tasklistwebservice.tasklistService"/>
+  <parameter name="scope" value="application"/>
+  <beanMapping languageSpecificType="java:tasklistwebservice.Task" qname="ns1:Task" xmlns:ns1="http://www.uc3m.es/WS/tasklistService"/>
+  <arrayMapping innerType="ns2:Task" languageSpecificType="java:tasklistwebservice.Task[]" qname="ns2:ArrayOfTask" xmlns:ns2="http://www.uc3m.es/WS/tasklistService"/>
  </service>
  <transport name="http">
   <requestFlow>

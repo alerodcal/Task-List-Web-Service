@@ -2,6 +2,7 @@ package tasklistwebservice;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.Iterator;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -41,7 +42,6 @@ public class tasklistService {
             // Delete user
             service.deleteUser(token);
             service.close();
-            while(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,7 +70,7 @@ public class tasklistService {
     // This function adds a new user to the database.
     // Throws Exception if user is already in use or if you pass a null argument.
     // Return the session token if the user has been created correctly.
-    public String registerUser(String username, String password) throws Exception {
+    public synchronized String registerUser(String username, String password) throws Exception {
         String sessionToken = null;
         if (username != null && password != null) {
             try {
@@ -108,7 +108,7 @@ public class tasklistService {
     // This function lets the user to login in the system.
     // Throws Exception if the given user/password is incorrect or if you pass a null argument.
     // Return the session token if the user has been logged correctly.
-    public String loginUser(String username, String password) throws Exception {
+    public synchronized String loginUser(String username, String password) throws Exception {
         String sessionToken = null;
         String user = null;
         String pass = null;
@@ -157,7 +157,7 @@ public class tasklistService {
     // This method add a new task list to the database of the user.
     // The session must be opened before call this method.
     // Throws exception is session is not opened.
-    public void newTaskList (String taskList, String token) throws Exception {
+    public synchronized void newTaskList (String taskList, String token) throws Exception {
         if (taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
@@ -191,7 +191,7 @@ public class tasklistService {
     // This method delete a user from the database.
     // The session must be opened before call this method.
     // Throws exception is session is not opened.
-    public void deleteUser (String token) throws Exception {
+    public synchronized void deleteUser (String token) throws Exception {
         if (token != null){
             Session session = isSessionOpened(token);
             if (session != null){
@@ -222,7 +222,7 @@ public class tasklistService {
     // This method delete a list to the database of the user.
     // The session must be opened before call this method.
     // Throws exception is session is not opened.
-    public void deleteTaskList (String taskList, String token) throws Exception {
+    public synchronized void deleteTaskList (String taskList, String token) throws Exception {
         if (taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
@@ -255,7 +255,7 @@ public class tasklistService {
     // This method return an array of strings with the names of the user task lists.
     // Return null if the user has not task lists.
     // Throws Exception if you pass a null argument.
-    public String[] getLists (String token) throws Exception{
+    public synchronized String[] getLists (String token) throws Exception{
         ArrayList<String> lists = null;
         if (token != null){
             Session session = isSessionOpened(token);
@@ -295,7 +295,7 @@ public class tasklistService {
     // This method add a new task to the task list of the user.
     // The session must be opened before call this method.
     // Throws exception is session is not opened.
-    public void newTask (String task, String duedate, String taskList, String token) throws Exception {
+    public synchronized void newTask (String task, String duedate, String taskList, String token) throws Exception {
         if (task != null && duedate != null && taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
@@ -322,7 +322,7 @@ public class tasklistService {
     // This method delete a task to the task list of the user.
     // The session must be opened before call this method.
     // Throws exception is session is not opened.
-    public void deleteTask (int id, String taskList, String token) throws Exception {
+    public synchronized void deleteTask (int id, String taskList, String token) throws Exception {
         if (id > 0 && taskList != null && token != null){
             Session session = isSessionOpened(token);
             if (session != null){
@@ -347,7 +347,7 @@ public class tasklistService {
     // This method return an array of strings with the names of the user task lists.
     // Return null if the user has not task lists.
     // Throws Exception if you pass a null argument.
-    public Task[] getTasks (String taskList, String token) throws Exception{
+    public synchronized Task[] getTasks (String taskList, String token) throws Exception{
         ArrayList<Task> tasks = null;
         String done = "Not done";
         if (token != null){
@@ -366,8 +366,8 @@ public class tasklistService {
                 System.out.println("Tasks from " + session.getUsername() + "_" + taskList + ":");
                 while (resultSet.next()){
                     Task task = new Task(resultSet.getInt("id"), resultSet.getString("task"),
-                                       resultSet.getString("duedate"), resultSet.getBoolean("done"))
-                    tasks.add(tak);
+                                       resultSet.getString("duedate"), resultSet.getBoolean("done"));
+                    tasks.add(task);
                     if (task.getDone())
                         done = "Done";
                     System.out.println("\t" + task.getId() + ") " + task.getTask() + "(" +
@@ -392,7 +392,7 @@ public class tasklistService {
     
     // This method check if the session with the given token is opened.
     // Return the session object if the session is opened or null in other case.
-    private Session isSessionOpened(String token) {
+    private synchronized Session isSessionOpened(String token) {
         Session result = null;
         for (Session j: sessions)
             if (j.getSessionToken().equals(token))
@@ -401,10 +401,14 @@ public class tasklistService {
     }
     
     // This method close the session with the given session token.
-    public void closeSession(String token){
-        for (Session j: sessions)
-            if (j.getSessionToken().equals(token))
-                sessions.remove(j);
+    public synchronized void closeSession(String token){
+        for (Iterator<Session> iterator = sessions.iterator(); iterator.hasNext(); ){
+            Session value = iterator.next();
+            if (value.getSessionToken().equals(token)) {
+                System.out.println("The session " + value.getSessionToken() + " has been closed.");
+                iterator.remove();
+            }
+        }
     }
     
     private void writeUsers(ResultSet resultSet) throws SQLException {
