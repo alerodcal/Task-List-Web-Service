@@ -344,6 +344,35 @@ public class tasklistService {
         }
     }
 
+    // This method updates a task value from the task list of the user.
+    // The session must be opened before call this method.
+    // Throws exception is session is not opened.
+    public synchronized void editTask (int id, String task, String dueDate, Boolean done, String taskList, String token) throws Exception {
+        if (id > 0 && task != null && dueDate != null && taskList != null && token != null){
+            Session session = isSessionOpened(token);
+            if (session != null){
+                // Update task row from user taskLists table
+                String query = "UPDATE " + session.getUsername() + "_" + taskList + " SET task=?,dueDate=?,done=?" 
+                         + " WHERE id=?;"; 
+                preparedStatement = connect
+                      .prepareStatement(query);
+                preparedStatement.setString(1,task); 
+                preparedStatement.setString(2,dueDate); 
+                preparedStatement.setBoolean(3,done);  
+                preparedStatement.setInt(4,id);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+                System.out.println("Task with id " + id + " has been updated from " 
+                        + session.getUsername() +  "_" + taskList + ". New values:\n"
+                        + "\t" + id + ") " + task + " (" + dueDate + ")-> Done: " + done);
+            } else {
+                throw new Exception("Session is not opened.");
+            }
+        } else {
+            throw new Exception("You must provide a valid id, task, due date, done, task list and session token.");
+        }
+    }
+
     // This method return an array of strings with the names of the user task lists.
     // Return null if the user has not task lists.
     // Throws Exception if you pass a null argument.
