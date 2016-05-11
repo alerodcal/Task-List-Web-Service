@@ -170,9 +170,9 @@ public class tasklistService {
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
                 
-                // Add table to support new list.
+                // Add table to support new list. 
                 query = "CREATE TABLE taskList." + session.getUsername()
-                        + "_" + taskList + "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                        + "_" + taskList.replaceAll("\\s", "_") + "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                         + "task VARCHAR(256) NOT NULL, duedate VARCHAR(30), done BOOLEAN DEFAULT false);";
                 preparedStatement = connect
                       .prepareStatement(query);
@@ -245,7 +245,7 @@ public class tasklistService {
             Session session = isSessionOpened(token);
             if (session != null){
                 String query = "DROP TABLE " + session.getUsername() 
-                        + "_" + taskList + ";";
+                        + "_" + taskList.replaceAll("\\s", "_") + ";";
                 // Delete task List table in database.
                 preparedStatement = connect
                           .prepareStatement(query);
